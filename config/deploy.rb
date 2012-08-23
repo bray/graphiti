@@ -1,18 +1,15 @@
-$:.unshift(File.expand_path('./lib', ENV['rvm_path']))
-require 'rvm/capistrano'
+require 'bundler/capistrano'
 
 set :application, "graphiti"
-set :deploy_to, "/opt/app/graphiti"
+set :deploy_to, "/var/www/graphiti"
 set :deploy_via, :remote_cache
 set :scm, :git
-set :repository, "git@github.com:paperlesspost/graphiti.git"
-set :user, "paperless"
+set :repository, "git@github.com:bray/graphiti.git"
+set :user, "deploy"
 set :use_sudo, false
 set :normalize_asset_timestamps, false
-set :rvm_ruby_string, 'default'
-set :rvm_bin_path, '/usr/local/bin'
 
-set :unicorn_binary, "/usr/local/rvm/gems/ruby-1.9.2-p0/bin/unicorn"
+set :unicorn_binary, "unicorn"
 set :unicorn_config, "#{current_path}/config/unicorn.rb"
 set :unicorn_pid, "#{current_path}/tmp/pids/unicorn.pid"
 
@@ -21,7 +18,7 @@ namespace :deploy do
     run "cd #{current_path} && bundle exec #{unicorn_binary} -c #{unicorn_config} -E production -D"
   end
   task :stop, :roles => :app, :except => { :no_release => true } do
-    run "kill `cat #{unicorn_pid}`"
+    run "if [ -f #{unicorn_pid} ]; then kill `cat #{unicorn_pid}`; fi"
   end
   task :graceful_stop, :roles => :app, :except => { :no_release => true } do
     run "kill -s QUIT `cat #{unicorn_pid}`"
@@ -50,16 +47,5 @@ namespace :graphiti do
   end
 end
 
-namespace :bundler do
-  desc "Automatically installed your bundled gems if a Gemfile exists"
-  task :install_gems, :roles => :web do
-    run %{if [ -f #{release_path}/Gemfile ]; then cd #{release_path} &&
-      mkdir -p #{release_path}/vendor &&
-      ln -nfs #{shared_path}/vendor/bundle #{release_path}/vendor/bundle &&
-      bundle install --without test development --deployment; fi
-    }
-  end
-end
 after "deploy:update_code", "graphiti:link_configs"
-after "deploy:update_code", "bundler:install_gems"
 after "deploy:update_code", "graphiti:compress"

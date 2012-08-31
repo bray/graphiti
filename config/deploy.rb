@@ -40,6 +40,7 @@ namespace :graphiti do
   task :link_configs do
     run "cd #{release_path} && ln -nfs #{shared_path}/config/settings.yml #{release_path}/config/settings.yml"
     run "cd #{release_path} && ln -nfs #{shared_path}/config/amazon_s3.yml #{release_path}/config/amazon_s3.yml"
+    run "cd #{release_path} && ln -nfs #{shared_path}/config/auth.yml #{release_path}/config/auth.yml"
   end
 
   task :compress do

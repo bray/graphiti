@@ -92,8 +92,10 @@ var app = Sammy('body', function() {
       this.session('lastPreview', options, function() {
         var $img = $("#graph-preview img"), $url = $('#graph-url input');
         var graph = new Graphiti.Graph(options);
+        var url = graph.buildURL();
+        Sammy.log('url: ' + url);
         graph.image($img);
-        $url.val(graph.buildURL());
+        $url.val(url);
       });
       this.updateOptionsForm(options);
     },
